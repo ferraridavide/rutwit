@@ -73,7 +73,7 @@
 
             async function checkThoughts(person1Thought, person2Thought) {
                 try {
-                    const response = await fetch('http://127.0.0.1:8787/compare-thoughts', {
+                    const response = await fetch('https://rutwit-worker.xthehacker2000x.workers.dev/compare-thoughts', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
