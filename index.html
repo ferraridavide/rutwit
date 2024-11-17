@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Are You Thinking What I'm Thinking?</title>
+</head>
+
+<body>
+    <h1>Are You Thinking What I'm Thinking? 🤔</h1>
+
+    <div id="description">
+        <p>Ever wondered if you and your friend are thinking about the same thing? Let's find out!</p>
+        <!-- Add your image here -->
+        <img src="spider-man-meme.jpg" alt="Thinking people" id="mainImage">
+    </div>
+
+    <div id="person1Section">
+        <h2>Person 1</h2>
+        <p><strong>Warning:</strong> Once submitted, your answer cannot be changed or viewed by Person 2!</p>
+        <textarea id="person1Input" rows="4" cols="50" placeholder="What are you thinking about?"></textarea>
+        <br>
+        <button onclick="submitPerson1()">Next</button>
+    </div>
+
+    <div id="person2Section" style="display: none;">
+        <h2>Person 2</h2>
+        <textarea id="person2Input" rows="4" cols="50" placeholder="What are you thinking about?"></textarea>
+        <br>
+        <button onclick="submitPerson2()">Compare Thoughts!</button>
+    </div>
+
+    <div id="resultSection" style="display: none;">
+        <h2>Results</h2>
+        <p id="resultText"></p>
+        <button onclick="resetGame()">Try Again</button>
+    </div>
+
+    <div id="errorSection" style="display: none;">
+        <h2>Oops!</h2>
+        <p id="errorText"></p>
+        <button onclick="resetGame()">Try Again</button>
+    </div>
+
+
+    <script>
+        let person1Thought = '';
+        let person2Thought = '';
+
+        function submitPerson1() {
+            person1Thought = document.getElementById('person1Input').value.trim();
+
+            if (!person1Thought) {
+                alert('Please enter your thought first!');
+                return;
+            }
+
+            document.getElementById('person1Section').style.display = 'none';
+            document.getElementById('person2Section').style.display = 'block';
+        }
+
+        async function submitPerson2() {
+            person2Thought = document.getElementById('person2Input').value.trim();
+
+            if (!person2Thought) {
+                alert('Please enter your thought first!');
+                return;
+            }
+
+            document.getElementById('person2Section').style.display = 'none';
+
+
+            async function checkThoughts(person1Thought, person2Thought) {
+                try {
+                    const response = await fetch('http://127.0.0.1:8787/compare-thoughts', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            person1Thought,
+                            person2Thought
+                        })
+                    });
+
+                    if (response.status === 429) {
+                        const data = await response.json();
+                        throw new Error(`Rate limit exceeded. Try again in ${data.retryAfter} seconds`);
+                    }
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Something went wrong');
+                    }
+
+                    const result = await response.json();
+
+                    // Show results
+                    document.getElementById('resultSection').style.display = 'block';
+                    document.getElementById('resultText').textContent = result.comparison;
+
+                } catch (error) {
+                    // Handle error (show to user)
+                    document.getElementById('errorSection').style.display = 'block';
+                    document.getElementById('errorText').textContent = `Error: ${error.message}`;
+                }
+            }
+
+
+
+            checkThoughts(person1Thought, person2Thought);
+        }
+
+        function resetGame() {
+            // Reset all values and show initial screen
+            person1Thought = '';
+            person2Thought = '';
+            document.getElementById('person1Input').value = '';
+            document.getElementById('person2Input').value = '';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('person1Section').style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>
